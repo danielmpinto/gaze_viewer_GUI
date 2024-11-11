@@ -1,52 +1,101 @@
-from email.policy import default
 from pathlib import Path
 import cv2
-import click
+import tkinter as tk
 from recorder.experiment_recorder import DummyRecorder, ExperimentRecorder
 from viewer.draw import PreviewRenderer
 from viewer.gaze import EyeTracker, MouseTrackerDriver, TobiiTrackerDriver
 from viewer.screen import ScreenCapturer, StaticImageCapturer
 
-
 DEFAULT_EXP_DIR = Path(__file__).parent / 'data'
 
+id = 'default'
+projeto = 'default'
 
-@click.command()
-@click.option('--id', prompt='ID do participante', help='Identificador único do participante')
-@click.option('--projeto', prompt='ID do projeto', help='Identificador único do projeto')
-@click.option('--experiment_dir', default=DEFAULT_EXP_DIR, help='Diretório de dados do experimento')
-@click.option('--mouse', is_flag=True, help='Usar mouse')
-@click.option('--record/--norecord', default=True, help='Não gravar experimento')
-@click.option('--preview_width', default=1024, help='Largura da imagem de preview')
-@click.option('--gaze_radius', default=30, help='Raio do indicador do olhar')
-@click.option('--window_name', default='Gaze', help='Título da janela')
-@click.option('--target', default=None, help='Imagem alvo (deixe em branco para capturar a tela)')
-def run_viewer(id, projeto, experiment_dir, mouse, record, preview_width, gaze_radius, window_name, target):
+def salvar(entry1, entry2, root):
+    global projeto
+    global id
+    projeto = str(entry1.get())  
+    id = str(entry2.get())       
+    
+    print(f"Valor 1: {projeto}, Valor 2: {id}")
+    
+    root.destroy()  
+    run_viewer(id, projeto, mouse=False)  
+
+def on_focus_in(entry, placeholder):
+    """Remove o texto de placeholder quando o campo recebe o foco"""
+    if entry.get() == placeholder:
+        entry.delete(0, tk.END)
+
+def on_focus_out(entry, placeholder):
+    """Adiciona o texto de placeholder se o campo estiver vazio"""
+    if entry.get() == "":
+        entry.insert(0, placeholder)
+
+def gui():
+    """Função para a interface gráfica"""
+    root = tk.Tk()
+    root.title("Gaze")
+
+    # Criando os campos de entrada
+    entry1 = tk.Entry(root)
+    placeholder1 = "Nome do Projeto"
+    entry1.insert(0, placeholder1)  # Texto de placeholder
+    entry1.bind("<FocusIn>", lambda event: on_focus_in(entry1, placeholder1))
+    entry1.bind("<FocusOut>", lambda event: on_focus_out(entry1, placeholder1))
+    entry1.pack(padx=20, pady=5)
+
+    entry2 = tk.Entry(root)
+    placeholder2 = "Nome do Participante"
+    entry2.insert(0, placeholder2)  # Texto de placeholder
+    entry2.bind("<FocusIn>", lambda event: on_focus_in(entry2, placeholder2))
+    entry2.bind("<FocusOut>", lambda event: on_focus_out(entry2, placeholder2))
+    entry2.pack(padx=20, pady=5)
+
+
+
+    # Botão Salvar que chama a função salvar
+    button_salvar = tk.Button(root, text="Salvar", command=lambda: salvar(entry1, entry2, root))
+    button_salvar.pack(pady=10)
+
+    root.mainloop()  # Inicia a interface gráfica
+
+def run_viewer(id, projeto, experiment_dir=DEFAULT_EXP_DIR, mouse=True, record=True, preview_width=1024, gaze_radius=30, window_name='Clique em Q para finalizar', target=None):
+    """Função principal do experimento"""
+    print(f"Executando experimentos com ID: {id} e Projeto: {projeto}")
+
+    # Se tiver um target, usa a imagem estática, senão captura a tela
     if target:
         capturer = StaticImageCapturer(target)
     else:
         capturer = ScreenCapturer()
+
+    # Usar mouse ou rastreador de olhos
     if mouse:
         driver = MouseTrackerDriver()
     else:
-        driver = TobiiTrackerDriver()
+        driver = TobiiTrackerDriver()  # Usando o rastreador de olhos
+
+    # Inicializa o rastreador de olhos
     eye_tracker = EyeTracker(driver)
+
+    # Inicializa o gravador
     if record:
         recorder = ExperimentRecorder(id, projeto, experiment_dir, capturer, eye_tracker)
     else:
         recorder = DummyRecorder()
+
     with capturer, eye_tracker, recorder:
         renderer = PreviewRenderer(capturer, eye_tracker, preview_width, gaze_radius)
-        print('To quit, change the focus to the visualization window and press "q"')
+        print('Para sair, mude o foco para a janela de visualização e pressione "q"')
         while cv2.waitKey(1) != ord('q'):
             if capturer.screen is None:
                 continue
 
-            preview = renderer.draw_preview()
-            recorder.on_mouse(capturer.mouse_position())
+            preview = renderer.draw_preview()  # Desenha a pré-visualização
+            recorder.on_mouse(capturer.mouse_position())  # Captura a posição do mouse
 
-            cv2.imshow(window_name, preview)
-
+            cv2.imshow(window_name, preview)  # Exibe a imagem com o preview
 
 if __name__ == '__main__':
-    run_viewer()
+    gui()  # Inicia a GUI

@@ -7,3 +7,6 @@ pyautogui
 click
 tobii_research
 tqdm
+
+
+pyinstaller
