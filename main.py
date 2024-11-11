@@ -1,3 +1,5 @@
+import sys
+import os
 from pathlib import Path
 import cv2
 import tkinter as tk
@@ -6,12 +8,25 @@ from viewer.draw import PreviewRenderer
 from viewer.gaze import EyeTracker, MouseTrackerDriver, TobiiTrackerDriver
 from viewer.screen import ScreenCapturer, StaticImageCapturer
 
-DEFAULT_EXP_DIR = Path(__file__).parent / 'data'
+# Define o caminho do diretório de experimentos (Videos)
+if getattr(sys, 'frozen', False):  # Verifica se estamos executando a partir de um arquivo compilado
+    app_path = Path(sys._MEIPASS)  # Diretório temporário onde os arquivos estão extraídos
+else:
+    app_path = Path(__file__).parent  # Diretório de execução normal no código-fonte
 
+# Caminho para a pasta 'Videos' do usuário no macOS/Windows/Linux
+DEFAULT_EXP_DIR = Path(os.path.expanduser('~/Movies/gaze_viewer'))
+
+# Garantir que o diretório de experimentos existe
+if not DEFAULT_EXP_DIR.exists():
+    DEFAULT_EXP_DIR.mkdir(parents=True)
+
+# Inicializa os valores de id e projeto
 id = 'default'
 projeto = 'default'
 
 def salvar(entry1, entry2, root):
+    """Função chamada para salvar os dados do projeto e id"""
     global projeto
     global id
     projeto = str(entry1.get())  
@@ -19,8 +34,8 @@ def salvar(entry1, entry2, root):
     
     print(f"Valor 1: {projeto}, Valor 2: {id}")
     
-    root.destroy()  
-    run_viewer(id, projeto, mouse=False)  
+    root.destroy()  # Fecha a GUI após salvar
+    run_viewer(id, projeto, mouse=False)  # Chama a função para iniciar o experimento
 
 def on_focus_in(entry, placeholder):
     """Remove o texto de placeholder quando o campo recebe o foco"""
@@ -51,8 +66,6 @@ def gui():
     entry2.bind("<FocusIn>", lambda event: on_focus_in(entry2, placeholder2))
     entry2.bind("<FocusOut>", lambda event: on_focus_out(entry2, placeholder2))
     entry2.pack(padx=20, pady=5)
-
-
 
     # Botão Salvar que chama a função salvar
     button_salvar = tk.Button(root, text="Salvar", command=lambda: salvar(entry1, entry2, root))
