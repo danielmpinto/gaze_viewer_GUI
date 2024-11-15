@@ -14,7 +14,7 @@ if getattr(sys, 'frozen', False):  # Verifica se estamos executando a partir de 
 else:
     app_path = Path(__file__).parent  # Diretório de execução normal no código-fonte
 
-# Caminho para a pasta 'Videos' do usuário no macOS/Windows/Linux
+# path for saving the videos
 DEFAULT_EXP_DIR = Path(os.path.expanduser('~/Movies/gaze_viewer'))
 
 # Garantir que o diretório de experimentos existe
