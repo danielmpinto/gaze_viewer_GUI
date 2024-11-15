@@ -22,10 +22,10 @@ MOUSE_TYPE = 'mouse'
 
 # tkinter
 root=tk.Tk()    
-
+root.title("Post Process Overlayed")
 ent1=tk.Entry(root,font=40)
 ent1.grid(row=2,column=1)
-label = Label(root, text='Give the directory for processing overlayed')
+label = Label(root, text='Give the directory for processing')
 label.grid(row=1, column=1)
 
 
