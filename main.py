@@ -9,19 +9,17 @@ from viewer.gaze import EyeTracker, MouseTrackerDriver, TobiiTrackerDriver
 from viewer.screen import ScreenCapturer, StaticImageCapturer
 
 # Define o caminho do diretório de experimentos (Videos)
-if getattr(sys, 'frozen', False):  # Verifica se estamos executando a partir de um arquivo compilado
-    app_path = Path(sys._MEIPASS)  # Diretório temporário onde os arquivos estão extraídos
+if getattr(sys, 'frozen', False): 
+    app_path = Path(sys._MEIPASS)  
 else:
-    app_path = Path(__file__).parent  # Diretório de execução normal no código-fonte
+    app_path = Path(__file__).parent 
 
 # path for saving the videos
 DEFAULT_EXP_DIR = Path(os.path.expanduser('~/Movies/gaze_viewer'))
 
-# Garantir que o diretório de experimentos existe
 if not DEFAULT_EXP_DIR.exists():
     DEFAULT_EXP_DIR.mkdir(parents=True)
 
-# Inicializa os valores de id e projeto
 id = 'default'
 projeto = 'default'
 
@@ -34,8 +32,8 @@ def salvar(entry1, entry2, root):
     
     print(f"Valor 1: {projeto}, Valor 2: {id}")
     
-    root.destroy()  # Fecha a GUI após salvar
-    run_viewer(id, projeto, mouse=False)  # Chama a função para iniciar o experimento
+    root.destroy()  
+    run_viewer(id, projeto, mouse=False) 
 
 def on_focus_in(entry, placeholder):
     """Remove o texto de placeholder quando o campo recebe o foco"""
@@ -51,48 +49,44 @@ def gui():
     """Função para a interface gráfica"""
     root = tk.Tk()
     root.title("Gaze")
+    root.geometry('200x150')
 
-    # Criando os campos de entrada
+
     entry1 = tk.Entry(root)
     placeholder1 = "Nome do Projeto"
-    entry1.insert(0, placeholder1)  # Texto de placeholder
+    entry1.insert(0, placeholder1) 
     entry1.bind("<FocusIn>", lambda event: on_focus_in(entry1, placeholder1))
     entry1.bind("<FocusOut>", lambda event: on_focus_out(entry1, placeholder1))
     entry1.pack(padx=20, pady=5)
 
     entry2 = tk.Entry(root)
     placeholder2 = "Nome do Participante"
-    entry2.insert(0, placeholder2)  # Texto de placeholder
+    entry2.insert(0, placeholder2) 
     entry2.bind("<FocusIn>", lambda event: on_focus_in(entry2, placeholder2))
     entry2.bind("<FocusOut>", lambda event: on_focus_out(entry2, placeholder2))
     entry2.pack(padx=20, pady=5)
 
-    # Botão Salvar que chama a função salvar
     button_salvar = tk.Button(root, text="Salvar", command=lambda: salvar(entry1, entry2, root))
     button_salvar.pack(pady=10)
 
-    root.mainloop()  # Inicia a interface gráfica
+    root.mainloop()  
 
 def run_viewer(id, projeto, experiment_dir=DEFAULT_EXP_DIR, mouse=True, record=True, preview_width=1024, gaze_radius=30, window_name='Clique em Q para finalizar', target=None):
     """Função principal do experimento"""
     print(f"Executando experimentos com ID: {id} e Projeto: {projeto}")
 
-    # Se tiver um target, usa a imagem estática, senão captura a tela
     if target:
         capturer = StaticImageCapturer(target)
     else:
         capturer = ScreenCapturer()
 
-    # Usar mouse ou rastreador de olhos
     if mouse:
         driver = MouseTrackerDriver()
     else:
-        driver = TobiiTrackerDriver()  # Usando o rastreador de olhos
+        driver = TobiiTrackerDriver()  
 
-    # Inicializa o rastreador de olhos
     eye_tracker = EyeTracker(driver)
 
-    # Inicializa o gravador
     if record:
         recorder = ExperimentRecorder(id, projeto, experiment_dir, capturer, eye_tracker)
     else:
@@ -105,10 +99,10 @@ def run_viewer(id, projeto, experiment_dir=DEFAULT_EXP_DIR, mouse=True, record=T
             if capturer.screen is None:
                 continue
 
-            preview = renderer.draw_preview()  # Desenha a pré-visualização
-            recorder.on_mouse(capturer.mouse_position())  # Captura a posição do mouse
+            preview = renderer.draw_preview()  
+            recorder.on_mouse(capturer.mouse_position())  
 
-            cv2.imshow(window_name, preview)  # Exibe a imagem com o preview
+            cv2.imshow(window_name, preview)  
 
 if __name__ == '__main__':
     gui()  # Inicia a GUI

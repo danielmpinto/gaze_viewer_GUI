@@ -23,6 +23,7 @@ MOUSE_TYPE = 'mouse'
 # tkinter
 root=tk.Tk()    
 root.title("Post Process Overlayed")
+root.geometry('200x150')
 ent1=tk.Entry(root,font=40)
 ent1.grid(row=2,column=1)
 label = Label(root, text='Give the directory for processing')
@@ -34,18 +35,11 @@ progressbar = ttk.Progressbar(orient=tk.HORIZONTAL, length=160)
 progressbar.grid(row=4, column=1)
 
 
-# ask for directory for compiling the overlayed movie
 def browsefunc():
-    # [] label asking the directory
-    # [] directory selection
-    # [] start button
-    # [] progress bar
-    
     filename =tkFileDialog.askdirectory()
     ent1.insert(tk.END, filename) 
     print(ent1.get())
     postprocess(ent1.get())
-    ## end
     sleep(5)
     
     sleep(5)
@@ -85,10 +79,8 @@ def process(screen_filename, overlayed_filename, data):
     last_gaze = None
     mouse = None
 
-    # Get total number of iterations
     total_frames = len(data)
 
-    # Function to write each frame
     def write_frame(frame):
         if frame is None:
             return
@@ -102,12 +94,11 @@ def process(screen_filename, overlayed_filename, data):
         writer.add_frame(curr_frame)
 
     gaze_cache = []
-    for i, d in enumerate(data):  # Removido o tqdm para não exibir no terminal
-        # Update progress bar incrementally
+    for i, d in enumerate(data):  
         progress = (i + 1) / total_frames * 100
         progressbar['value'] = progress
-        root.update_idletasks()  # This forces tkinter to update the progress bar
-        root.update()  # This allows the tkinter window to update, ensuring the progress bar updates in real time
+        root.update_idletasks()  
+        root.update()  
         
         dtype = d['dtype']
         if dtype == SCREEN_TYPE:
@@ -129,7 +120,7 @@ def process(screen_filename, overlayed_filename, data):
         if dtype == MOUSE_TYPE:
             mouse = d['x'], d['y']
     
-    write_frame(frame)  # Write last frame
+    write_frame(frame)  
     label_end = Label(root, text='Its done!')
     label_end.grid(row=4, column=4)
 
