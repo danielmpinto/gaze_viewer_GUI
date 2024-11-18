@@ -39,3 +39,9 @@ Run
 Where `TRIAL_DIR` is the directory containing the trial recorded data. Example:
 
     $ python main_post_process.py data/proj_awesome-page-eye-tracking/part_P01/trial_2022_06_13_12_08_18
+
+
+## Generating .app
+
+(env) user@SaladeUXs-iMac gaze_viewer_GUI % pyinstaller --onefile --strip --windowed --icon=capture.icns main.py
+(env) user@SaladeUXs-iMac gaze_viewer_GUI % pyinstaller --onefile --strip --windowed --icon=post.icns main_post_process.py
